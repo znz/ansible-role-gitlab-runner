@@ -1,0 +1,37 @@
+---
+# tasks file for ansible-role-gitlab-ce
+- name: "Add gitlab-ce apt key"
+  apt_key:
+    url: "https://packages.gitlab.com/runner/gitlab-ci-multi-runner/gpgkey"
+    id: "14219A96E15E78F4"
+- name: "Add apt repository of gitlab-ci-multi-runner"
+  apt_repository:
+    repo: "deb https://packages.gitlab.com/runner/gitlab-ci-multi-runner/{{ ansible_distribution | lower }} {{ ansible_lsb.codename }} main"
+- name: "Pin gitlab runner"
+  copy:
+    src: pin-gitlab-runner.pref
+    dest: /etc/apt/preferences.d/pin-gitlab-runner.pref
+    owner: root
+    group: root
+    mode: 0644
+- name: "Install gitlab-ci-multi-runner"
+  apt:
+    name: gitlab-ci-multi-runner
+
+- name: "List configured runners"
+  command: gitlab-runner list
+  register: configured_runners
+  changed_when: no
+
+- name: "Register gitlab runner"
+  command: >-
+    gitlab-runner register
+      --non-interactive
+      --url '{{ gitlab_runner_coordinator_url }}'
+      --registration-token '{{ gitlab_runner_registration_token }}'
+      --description '{{ gitlab_runner_description }}'
+      --executor '{{ gitlab_runner_executor }}'
+      --docker-image '{{ gitlab_runner_docker_image }}'
+      --tag-list '{{ gitlab_runner_tags | join(",") }}'
+      {{ gitlab_runner_register_options }}
+  when: (gitlab_runner_registration_token is not none) and (configured_runners.stderr.find('\n' + gitlab_runner_description) == -1)

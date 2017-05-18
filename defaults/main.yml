@@ -1,0 +1,9 @@
+---
+# defaults file for ansible-role-gitlab-runner
+gitlab_runner_coordinator_url: ""
+gitlab_runner_registration_token: ~
+gitlab_runner_description: "{{ ansible_hostname }}"
+gitlab_runner_executor: "docker"
+gitlab_runner_docker_image: "hello-world"
+gitlab_runner_tags: []
+gitlab_runner_register_options: ""
