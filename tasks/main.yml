@@ -1,12 +1,16 @@
 ---
-# tasks file for ansible-role-gitlab-ce
-- name: "Add gitlab-ce apt key"
+# tasks file for ansible-role-gitlab-runner
+- name: "Add gitlab-runner apt key"
   apt_key:
-    url: "https://packages.gitlab.com/runner/gitlab-ci-multi-runner/gpgkey"
+    url: "https://packages.gitlab.com/runner/gitlab-runner/gpgkey"
     id: "14219A96E15E78F4"
-- name: "Add apt repository of gitlab-ci-multi-runner"
+- name: "Remove apt repository of gitlab-ci-multi-runner"
   apt_repository:
     repo: "deb https://packages.gitlab.com/runner/gitlab-ci-multi-runner/{{ ansible_distribution | lower }} {{ ansible_lsb.codename }} main"
+    state: absent
+- name: "Add apt repository of gitlab-runner"
+  apt_repository:
+    repo: "deb https://packages.gitlab.com/runner/gitlab-runner/{{ ansible_distribution | lower }} {{ ansible_lsb.codename }} main"
 - name: "Pin gitlab runner"
   copy:
     src: pin-gitlab-runner.pref
@@ -14,9 +18,9 @@
     owner: root
     group: root
     mode: 0644
-- name: "Install gitlab-ci-multi-runner"
+- name: "Install gitlab-runner"
   apt:
-    name: gitlab-ci-multi-runner
+    name: gitlab-runner
 
 - name: "List configured runners"
   command: gitlab-runner list
